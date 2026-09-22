@@ -93,7 +93,7 @@ A type can be reordered when it is:
 
 - registered with `show_ui`
 - **not** `page` (core pages keep their tree UI)
-- **not** `attachment` or other internals (`revision`, `wp_block`, ACF UI types, …)
+- **not** `attachment` or other internals (`revision`, `wp_block`, …)
 
 Custom post types may be hierarchical in WordPress; this plugin still only writes `menu_order`, never `post_parent`.
 
@@ -121,7 +121,7 @@ Reordering is disabled (handle hidden, query left alone) when the visible set is
 
 Saving a page splices that page into the authoritative full sequence (so pagination is honored). If the submitted IDs no longer match that page — a concurrent edit, a deleted post — the request returns **409** and the table restores the previous row order.
 
-This plugin does **not** autosort public queries. WordPress still defaults to `post_date`. Ask for `menu_order` in the query (or use CloakWP’s ACF Query field defaults).
+This plugin does **not** autosort public queries. WordPress still defaults to `post_date`. Ask for `menu_order` in the query.
 
 ## Architecture
 
