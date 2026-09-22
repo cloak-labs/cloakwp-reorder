@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace CloakWP\Reorder\Core;
 
 /**
- * Flat list-table reordering cannot express parent/child changes, so hierarchical
- * types and attachments stay out of this release.
+ * Attachments and internals stay out. Core pages keep their tree UI.
+ * Custom types may be hierarchical in WordPress but still use a flat
+ * list table — those are eligible; we only write menu_order, never parent.
  */
 final class Eligibility
 {
   /** @var list<string> */
   public const EXCLUDED = [
     'attachment',
+    'page',
     'revision',
     'nav_menu_item',
     'custom_css',
@@ -44,7 +46,7 @@ final class Eligibility
     }
 
     $object = get_post_type_object($postType);
-    if (!$object || empty($object->show_ui) || !empty($object->hierarchical)) {
+    if (!$object || empty($object->show_ui)) {
       return false;
     }
 

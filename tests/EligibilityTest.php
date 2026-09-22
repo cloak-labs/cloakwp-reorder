@@ -31,4 +31,11 @@ final class EligibilityTest extends TestCase
     $this->assertFalse($eligibility->allows('wp_block'));
     $this->assertSame(['project'], $eligibility->all());
   }
+
+  public function testAllowsHierarchicalCustomTypes(): void
+  {
+    WpStubs::postType('team', true, true);
+
+    $this->assertTrue((new Eligibility())->allows('team'));
+  }
 }

@@ -92,8 +92,10 @@ Reorder::make()
 A type can be reordered when it is:
 
 - registered with `show_ui`
-- **not** hierarchical (pages and other trees stay out — a flat drag cannot represent parent/child)
+- **not** `page` (core pages keep their tree UI)
 - **not** `attachment` or other internals (`revision`, `wp_block`, ACF UI types, …)
+
+Custom post types may be hierarchical in WordPress; this plugin still only writes `menu_order`, never `post_parent`.
 
 ### Config filter
 
