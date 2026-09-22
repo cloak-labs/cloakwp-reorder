@@ -108,7 +108,11 @@
     $list.sortable({
       items: '> tr.iedit',
       handle: '.reorder-handle',
+      // jQuery UI defaults cancel to "input,textarea,button,select,option".
+      // A <button> handle therefore never starts a drag.
+      cancel: 'input, textarea, select, option',
       axis: 'y',
+      distance: 3,
       placeholder: {
         element() {
           return $('<tr class="ui-sortable-placeholder"><td>&nbsp;</td></tr>')[0];

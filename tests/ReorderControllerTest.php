@@ -89,6 +89,15 @@ final class ReorderControllerTest extends TestCase
     $this->assertFalse($controller->canReorder(new WP_REST_Request(['post_type' => 'page'])));
   }
 
+  public function testPermissionCallbackRejectsUsersWithoutEditCaps(): void
+  {
+    WpStubs::$caps['edit_posts'] = false;
+
+    $this->assertFalse(
+      $this->controller()->canReorder(new WP_REST_Request(['post_type' => 'project'])),
+    );
+  }
+
   private function controller(?FakePostsTable $table = null): ReorderController
   {
     $config = Config::defaults()->withPostTypes(['project']);

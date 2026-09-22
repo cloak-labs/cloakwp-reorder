@@ -56,6 +56,17 @@ final class ListTableTest extends TestCase
     $this->assertArrayNotHasKey('orderby', $query->vars);
   }
 
+  public function testHandleIsAFocusableSpanNotAButton(): void
+  {
+    ob_start();
+    $this->table()->renderColumn('reorder', 31);
+    $html = (string) ob_get_clean();
+
+    $this->assertStringContainsString('class="reorder-handle"', $html);
+    $this->assertStringContainsString('role="button"', $html);
+    $this->assertStringNotContainsString('<button', $html);
+  }
+
   private function table(): ListTable
   {
     $config = Config::defaults()->withPostTypes(['project']);

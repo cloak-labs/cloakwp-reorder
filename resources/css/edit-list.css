@@ -1,6 +1,7 @@
 .wp-list-table .column-reorder {
-  width: 2.4em;
+  width: 20px;
   text-align: center;
+  padding: 8px 2px 8px 0px;
 }
 
 .wp-list-table .column-reorder .reorder-handle {
@@ -8,12 +9,13 @@
   align-items: center;
   justify-content: center;
   margin: 0;
-  padding: 4px;
+  padding: 1px;
   border: 0;
   background: transparent;
   color: #787c82;
   cursor: grab;
   line-height: 1;
+  user-select: none;
 }
 
 .wp-list-table .column-reorder .reorder-handle:hover,

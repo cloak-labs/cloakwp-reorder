@@ -76,7 +76,7 @@ final class ListTable
     }
 
     printf(
-      '<button type="button" class="reorder-handle" aria-label="%s" data-id="%d"><span class="dashicons dashicons-menu" aria-hidden="true"></span></button>',
+      '<span class="reorder-handle" role="button" tabindex="0" aria-label="%s" data-id="%d"><span class="dashicons dashicons-menu" aria-hidden="true"></span></span>',
       esc_attr__('Move', 'reorder'),
       $postId,
     );
