@@ -1,0 +1,53 @@
+.wp-list-table .column-reorder {
+  width: 2.4em;
+  text-align: center;
+}
+
+.wp-list-table .column-reorder .reorder-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: #787c82;
+  cursor: grab;
+  line-height: 1;
+}
+
+.wp-list-table .column-reorder .reorder-handle:hover,
+.wp-list-table .column-reorder .reorder-handle:focus {
+  color: #1d2327;
+}
+
+.wp-list-table .column-reorder .reorder-handle:focus {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2271b1;
+  outline: 0;
+}
+
+.wp-list-table .column-reorder .reorder-handle:active {
+  cursor: grabbing;
+}
+
+.wp-list-table .column-reorder .dashicons {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+
+.wp-list-table.reorder-saving {
+  opacity: 0.65;
+}
+
+.wp-list-table .ui-sortable-placeholder td {
+  box-sizing: border-box;
+  height: 36px;
+  border: 2px dashed #c3c4c7;
+  background: #f6f7f7;
+}
+
+.wp-list-table .ui-sortable-helper {
+  background: #fff;
+  outline: 1px solid #c3c4c7;
+}
