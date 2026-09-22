@@ -45,8 +45,11 @@ final class WpStubs
   /** @var array<string, array{src: string, deps: list<string>, ver: string}> */
   public static array $registeredStyles = [];
 
-  /** @var array<string, mixed> */
-  public static array $localized = [];
+  /** @var array<string, string> */
+  public static array $inlineScripts = [];
+
+  /** @var list<int> */
+  public static array $cleanedPostIds = [];
 
   public static string $pluginsUrlBase = 'https://example.test/app/mu-plugins/reorder';
 
@@ -69,7 +72,8 @@ final class WpStubs
     self::$enqueuedStyles = [];
     self::$registeredScripts = [];
     self::$registeredStyles = [];
-    self::$localized = [];
+    self::$inlineScripts = [];
+    self::$cleanedPostIds = [];
     self::$pluginsUrlBase = 'https://example.test/app/mu-plugins/reorder';
     self::$currentScreen = null;
     self::$isAdmin = true;

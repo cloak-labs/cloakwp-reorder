@@ -34,14 +34,15 @@ final class AssetsTest extends TestCase
     $assets = new Assets(dirname(__DIR__) . '/reorder.php');
     $assets->enqueue('project', 2, 20);
 
+    $payload = json_decode(str_replace('window.reorderList = ', '', rtrim(WpStubs::$inlineScripts[Assets::SCRIPT_HANDLE], ';')), true);
+
     $this->assertContains(Assets::SCRIPT_HANDLE, WpStubs::$enqueuedScripts);
     $this->assertContains(Assets::STYLE_HANDLE, WpStubs::$enqueuedStyles);
-    $this->assertSame('reorderList', WpStubs::$localized[Assets::SCRIPT_HANDLE]['object']);
-    $this->assertSame('project', WpStubs::$localized[Assets::SCRIPT_HANDLE]['data']['postType']);
-    $this->assertSame(2, WpStubs::$localized[Assets::SCRIPT_HANDLE]['data']['paged']);
+    $this->assertSame('project', $payload['postType']);
+    $this->assertSame(2, $payload['paged']);
     $this->assertSame(
       'https://example.test/wp-json/reorder/v1/posts',
-      WpStubs::$localized[Assets::SCRIPT_HANDLE]['data']['restUrl'],
+      $payload['restUrl'],
     );
   }
 }

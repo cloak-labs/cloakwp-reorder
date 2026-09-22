@@ -298,13 +298,17 @@ if (!function_exists('wp_enqueue_style')) {
   }
 }
 
-if (!function_exists('wp_localize_script')) {
-  function wp_localize_script($handle, $objectName, $data): void
+if (!function_exists('wp_add_inline_script')) {
+  function wp_add_inline_script($handle, $data, $position = 'after'): void
   {
-    WpStubs::$localized[$handle] = [
-      'object' => $objectName,
-      'data' => $data,
-    ];
+    WpStubs::$inlineScripts[$handle] = (string) $data;
+  }
+}
+
+if (!function_exists('wp_json_encode')) {
+  function wp_json_encode($data, $options = 0, $depth = 512): string|false
+  {
+    return json_encode($data, $options);
   }
 }
 
@@ -342,5 +346,6 @@ if (!function_exists('register_rest_route')) {
 if (!function_exists('clean_post_cache')) {
   function clean_post_cache($id): void
   {
+    WpStubs::$cleanedPostIds[] = (int) $id;
   }
 }

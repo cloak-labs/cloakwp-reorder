@@ -28,17 +28,21 @@ final class Assets
     wp_enqueue_script(self::SCRIPT_HANDLE);
     wp_enqueue_style(self::STYLE_HANDLE);
 
-    wp_localize_script(self::SCRIPT_HANDLE, 'reorderList', [
-      'restUrl' => esc_url_raw(rest_url('reorder/v1/posts')),
-      'nonce' => wp_create_nonce('wp_rest'),
-      'postType' => $postType,
-      'paged' => $paged,
-      'perPage' => $perPage,
-      'i18n' => [
-        'saved' => __('Order saved.', 'reorder'),
-        'error' => __('Could not save the order. The list was restored.', 'reorder'),
-      ],
-    ]);
+    wp_add_inline_script(
+      self::SCRIPT_HANDLE,
+      'window.reorderList = ' . wp_json_encode([
+        'restUrl' => esc_url_raw(rest_url('reorder/v1/posts')),
+        'nonce' => wp_create_nonce('wp_rest'),
+        'postType' => $postType,
+        'paged' => $paged,
+        'perPage' => $perPage,
+        'i18n' => [
+          'saved' => __('Order saved.', 'reorder'),
+          'error' => __('Could not save the order. The list was restored.', 'reorder'),
+        ],
+      ], JSON_UNESCAPED_SLASHES) . ';',
+      'before',
+    );
   }
 
   public function registerHandles(): void
