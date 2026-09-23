@@ -11,6 +11,15 @@ use WP_Screen;
 
 final class ListTable
 {
+  /**
+   * Quick Edit rebuilds one row over admin-ajax. That request never fires
+   * current_screen, so the column hooks registered in bind() are absent and
+   * the new row is one cell short. The title then sits in the 20px handle
+   * column. This flag is set only when the list that opened Quick Edit was
+   * reorderable.
+   */
+  private bool $inlineSaveHandle = false;
+
   public function __construct(
     private readonly Config $config,
     private readonly Screen $screen,
@@ -23,6 +32,8 @@ final class ListTable
     add_action('current_screen', [$this, 'bind']);
     add_action('pre_get_posts', [$this, 'orderQuery']);
     add_filter('hidden_columns', [$this, 'keepHandleVisible'], 10, 2);
+    add_action('quick_edit_custom_box', [$this, 'quickEditMarker'], 10, 2);
+    add_action('wp_ajax_inline-save', [$this, 'prepareInlineSave'], 0);
   }
 
   public function bind(mixed $screen): void
@@ -40,9 +51,61 @@ final class ListTable
       return;
     }
 
-    add_filter("manage_{$postType}_posts_columns", [$this, 'columns']);
-    add_action("manage_{$postType}_posts_custom_column", [$this, 'renderColumn'], 10, 2);
+    $this->listenForColumns($postType);
     add_action('admin_enqueue_scripts', [$this, 'enqueue']);
+    add_action('load-edit.php', [$this, 'flattenHierarchicalQuery']);
+  }
+
+  /**
+   * Hierarchical edit screens otherwise render a page tree. That tree is not
+   * the flat menu_order page the save request compares against, so a drop is
+   * rejected and the row snaps back. Setting orderby before wp_edit_posts_query()
+   * keeps the list flat. An explicit column sort is left alone.
+   */
+  public function flattenHierarchicalQuery(): void
+  {
+    if (!$this->screen->isReorderable()) {
+      return;
+    }
+
+    $postType = $this->screen->postType();
+    if ($postType === null || !is_post_type_hierarchical($postType)) {
+      return;
+    }
+
+    $orderby = $_GET['orderby'] ?? null;
+    if (is_string($orderby) && $orderby !== '') {
+      return;
+    }
+
+    $_GET['orderby'] = 'menu_order';
+    $_REQUEST['orderby'] = 'menu_order';
+  }
+
+  public function quickEditMarker(string $column, string $postType): void
+  {
+    if ($column !== 'reorder' || !$this->config->enables($postType) || !$this->screen->isReorderable()) {
+      return;
+    }
+
+    echo '<input type="hidden" name="reorder_active" value="1" />';
+  }
+
+  public function prepareInlineSave(): void
+  {
+    $postType = $_POST['post_type'] ?? '';
+    $marker = $_POST['reorder_active'] ?? '';
+    if (!is_string($postType) || !is_string($marker) || $marker !== '1') {
+      return;
+    }
+
+    $postType = sanitize_key($postType);
+    if ($postType === '' || !$this->config->enables($postType)) {
+      return;
+    }
+
+    $this->inlineSaveHandle = true;
+    $this->listenForColumns($postType);
   }
 
   /**
@@ -51,7 +114,7 @@ final class ListTable
    */
   public function columns(array $columns): array
   {
-    if (!$this->screen->isReorderable()) {
+    if (isset($columns['reorder']) || !$this->showsHandle()) {
       return $columns;
     }
 
@@ -71,7 +134,7 @@ final class ListTable
 
   public function renderColumn(string $column, int $postId): void
   {
-    if ($column !== 'reorder' || !$this->screen->isReorderable()) {
+    if ($column !== 'reorder' || !$this->showsHandle()) {
       return;
     }
 
@@ -122,5 +185,16 @@ final class ListTable
       $hidden,
       static fn(string $column): bool => $column !== 'reorder',
     ));
+  }
+
+  private function showsHandle(): bool
+  {
+    return $this->inlineSaveHandle || $this->screen->isReorderable();
+  }
+
+  private function listenForColumns(string $postType): void
+  {
+    add_filter("manage_{$postType}_posts_columns", [$this, 'columns']);
+    add_action("manage_{$postType}_posts_custom_column", [$this, 'renderColumn'], 10, 2);
   }
 }

@@ -42,14 +42,14 @@
   opacity: 0.65;
 }
 
-.wp-list-table .ui-sortable-placeholder td {
+.wp-list-table tr.reorder-placeholder td {
   box-sizing: border-box;
-  height: 36px;
   border: 2px dashed #c3c4c7;
   background: #f6f7f7;
 }
 
-.wp-list-table .ui-sortable-helper {
+.wp-list-table tr.ui-sortable-helper {
+  display: table;
   background: #fff;
   outline: 1px solid #c3c4c7;
 }

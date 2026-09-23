@@ -92,7 +92,13 @@ final class Screen
   {
     $option = 'edit_' . $postType . '_per_page';
     $perPage = (int) get_user_option($option);
+    if ($perPage < 1) {
+      $perPage = 20;
+    }
+
+    // Same filters as wp_edit_posts_query(), so the saved page offset matches the list.
     $perPage = (int) apply_filters("edit_{$postType}_per_page", $perPage);
+    $perPage = (int) apply_filters('edit_posts_per_page', $perPage, $postType);
 
     return $perPage > 0 ? $perPage : 20;
   }

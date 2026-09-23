@@ -78,6 +78,8 @@ final class WpStubs
     self::$currentScreen = null;
     self::$isAdmin = true;
     $_GET = [];
+    $_POST = [];
+    $_REQUEST = [];
   }
 
   public static function postType(

@@ -67,6 +67,120 @@ final class ListTableTest extends TestCase
     $this->assertStringNotContainsString('<button', $html);
   }
 
+  public function testQuickEditPostsAMarkerOnlyWhileTheListIsReorderable(): void
+  {
+    $table = $this->table();
+
+    ob_start();
+    $table->quickEditMarker('reorder', 'project');
+    $html = (string) ob_get_clean();
+
+    $this->assertStringContainsString('name="reorder_active"', $html);
+    $this->assertStringContainsString('value="1"', $html);
+
+    $_GET = ['s' => 'cabin'];
+    ob_start();
+    $table->quickEditMarker('reorder', 'project');
+    $this->assertSame('', (string) ob_get_clean());
+  }
+
+  public function testInlineSaveKeepsTheHandleColumnWithoutACurrentScreen(): void
+  {
+    WpStubs::$currentScreen = null;
+    $_POST = [
+      'post_type' => 'project',
+      'reorder_active' => '1',
+    ];
+
+    $table = $this->table();
+    $table->prepareInlineSave();
+
+    $columns = $table->columns(['cb' => '<input />', 'title' => 'Title']);
+    $this->assertSame(['cb', 'reorder', 'title'], array_keys($columns));
+
+    ob_start();
+    $table->renderColumn('reorder', 31);
+    $html = (string) ob_get_clean();
+    $this->assertStringContainsString('class="reorder-handle"', $html);
+
+    $hooks = array_column(WpStubs::$filters, 'hook');
+    $this->assertContains('manage_project_posts_columns', $hooks);
+  }
+
+  public function testInlineSaveOmitsTheHandleWhenTheListWasNotReorderable(): void
+  {
+    WpStubs::$currentScreen = null;
+    $_POST = ['post_type' => 'project'];
+
+    $table = $this->table();
+    $table->prepareInlineSave();
+
+    $this->assertSame(
+      ['cb', 'title'],
+      array_keys($table->columns(['cb' => '<input />', 'title' => 'Title'])),
+    );
+  }
+
+  public function testInlineSaveIgnoresAMarkerForAPostTypeThatIsNotEnabled(): void
+  {
+    WpStubs::$currentScreen = null;
+    $_POST = [
+      'post_type' => 'page',
+      'reorder_active' => '1',
+    ];
+
+    $table = $this->table();
+    $table->prepareInlineSave();
+
+    $this->assertArrayNotHasKey('reorder', $table->columns(['title' => 'Title']));
+  }
+
+  public function testHierarchicalListsStayFlatSoTheSavedPageMatchesTheRows(): void
+  {
+    WpStubs::postType('project', true, true);
+    $_GET = ['post_type' => 'project'];
+
+    $this->table()->flattenHierarchicalQuery();
+
+    $this->assertSame('menu_order', $_GET['orderby']);
+    $this->assertSame('menu_order', $_REQUEST['orderby']);
+  }
+
+  public function testDoesNotFlattenWhenAColumnSortIsAlreadyChosen(): void
+  {
+    WpStubs::postType('project', true, true);
+    $_GET = ['post_type' => 'project', 'orderby' => 'title'];
+
+    $this->table()->flattenHierarchicalQuery();
+
+    $this->assertSame('title', $_GET['orderby']);
+  }
+
+  public function testNonHierarchicalListsDoNotInventAnOrderby(): void
+  {
+    $_GET = ['post_type' => 'project'];
+
+    $this->table()->flattenHierarchicalQuery();
+
+    $this->assertArrayNotHasKey('orderby', $_GET);
+  }
+
+  public function testRegistersInlineSaveBeforeCoreRendersTheReplacementRow(): void
+  {
+    $this->table()->register();
+
+    $hook = null;
+    foreach (WpStubs::$actions as $action) {
+      if ($action['hook'] === 'wp_ajax_inline-save') {
+        $hook = $action;
+      }
+    }
+
+    $this->assertNotNull($hook);
+    $this->assertSame(0, $hook['priority']);
+    $this->assertContains('quick_edit_custom_box', array_column(WpStubs::$actions, 'hook'));
+  }
+
   private function table(): ListTable
   {
     $config = Config::defaults()->withPostTypes(['project']);

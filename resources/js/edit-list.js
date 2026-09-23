@@ -41,6 +41,38 @@
       }
     }
 
+    function messageFrom(error) {
+      if (error && typeof error.message === 'string' && error.message) {
+        return error.message;
+      }
+
+      const responseMessage = error && error.responseJSON && error.responseJSON.message;
+      if (typeof responseMessage === 'string' && responseMessage) {
+        return responseMessage;
+      }
+
+      return config.i18n.error;
+    }
+
+    function showError(message) {
+      $('.reorder-notice').remove();
+      const $notice = $('<div class="notice notice-error reorder-notice"><p></p></div>');
+      $notice.find('p').text(message);
+
+      const $anchor = $('.wp-header-end');
+      if ($anchor.length) {
+        $anchor.after($notice);
+      } else {
+        $('.wrap h1').first().after($notice);
+      }
+
+      if ($notice[0] && typeof $notice[0].scrollIntoView === 'function') {
+        $notice[0].scrollIntoView({ block: 'nearest' });
+      }
+
+      speak(message, 'assertive');
+    }
+
     function setSaving(isSaving) {
       saving = isSaving;
       if (table) {
@@ -94,9 +126,9 @@
           snapshot = current;
           speak(config.i18n.saved);
         })
-        .catch(() => {
+        .catch((error) => {
           restore(snapshot);
-          speak(config.i18n.error, 'assertive');
+          showError(messageFrom(error));
         })
         .finally(() => {
           setSaving(false);
@@ -112,24 +144,32 @@
       // A <button> handle therefore never starts a drag.
       cancel: 'input, textarea, select, option',
       axis: 'y',
+      // Pointer tolerance can place the row after the last item. The default
+      // intersect test stops short, the drop is discarded, and nothing is saved.
+      tolerance: 'pointer',
       distance: 3,
-      placeholder: {
-        element() {
-          return $('<tr class="ui-sortable-placeholder"><td>&nbsp;</td></tr>')[0];
-        },
-        update() {},
+      forcePlaceholderSize: true,
+      placeholder: 'reorder-placeholder',
+      helper(event, item) {
+        const $helper = item.clone();
+        $helper.children().each(function (index) {
+          $(this).width(item.children().eq(index).outerWidth());
+        });
+        return $helper;
       },
       start(event, ui) {
-        const cols = $list.closest('table').find('thead tr:first').children('th, td').length;
-        if (cols) {
-          ui.placeholder.children('td').attr('colspan', cols);
-        }
+        ui.placeholder.height(ui.item.outerHeight());
       },
-      helper(event, ui) {
-        ui.children().each(function () {
-          $(this).width($(this).width());
-        });
-        return ui;
+      sort(event, ui) {
+        const last = $list.children('tr.iedit').not(ui.item).last()[0];
+        if (!last || !ui.placeholder.length) {
+          return;
+        }
+
+        const rect = last.getBoundingClientRect();
+        if (event.clientY > rect.bottom && ui.placeholder[0].previousElementSibling !== last) {
+          last.after(ui.placeholder[0]);
+        }
       },
       update() {
         save();

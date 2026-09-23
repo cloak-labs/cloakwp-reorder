@@ -83,6 +83,15 @@ final class ScreenTest extends TestCase
     $this->assertSame(50, $admin->perPage('project'));
   }
 
+  public function testPerPageUsesTheSamePostsPerPageFilterAsTheList(): void
+  {
+    WpStubs::$userOptions['edit_project_per_page'] = 50;
+    WpStubs::$filterValues['edit_posts_per_page'] = 15;
+    $admin = new Screen(Config::defaults()->withPostTypes(['project']));
+
+    $this->assertSame(15, $admin->perPage('project'));
+  }
+
   private function editScreen(): WP_Screen
   {
     $screen = new WP_Screen();

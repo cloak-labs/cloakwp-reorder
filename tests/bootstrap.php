@@ -126,6 +126,15 @@ if (!function_exists('get_post_types')) {
   }
 }
 
+if (!function_exists('is_post_type_hierarchical')) {
+  function is_post_type_hierarchical($postType): bool
+  {
+    $object = get_post_type_object($postType);
+
+    return (bool) ($object->hierarchical ?? false);
+  }
+}
+
 if (!function_exists('get_object_taxonomies')) {
   function get_object_taxonomies($postType)
   {
