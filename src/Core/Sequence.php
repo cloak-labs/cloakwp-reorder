@@ -84,4 +84,44 @@ final class Sequence
 
     return new self([...$before, ...$pageIds, ...$after]);
   }
+
+  /**
+   * Rewrite the relative order of $visibleIds. Other IDs stay put.
+   * The list on screen is not always a contiguous slice of the stored sequence
+   * (hierarchy, pagination, or a sort tie), so requiring that slice rejects every move.
+   *
+   * @param list<int> $visibleIds
+   */
+  public function reorderVisible(array $visibleIds): self
+  {
+    $wanted = array_values(array_map(intval(...), $visibleIds));
+    if ($wanted === []) {
+      throw new InvalidArgumentException('A reorder page cannot be empty.');
+    }
+
+    $pending = array_fill_keys($wanted, true);
+    if (count($pending) !== count($wanted)) {
+      throw new InvalidArgumentException('Sequence IDs must be unique.');
+    }
+
+    $slots = [];
+    foreach ($this->ids as $index => $id) {
+      if (!isset($pending[$id])) {
+        continue;
+      }
+      $slots[] = $index;
+      unset($pending[$id]);
+    }
+
+    if ($pending !== []) {
+      throw StalePageException::mismatch();
+    }
+
+    $next = $this->ids;
+    foreach ($slots as $position => $index) {
+      $next[$index] = $wanted[$position];
+    }
+
+    return new self($next);
+  }
 }

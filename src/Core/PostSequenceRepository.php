@@ -18,13 +18,17 @@ final class PostSequenceRepository
    */
   public function applyPage(string $postType, array $pageIds, int $paged, int $perPage): Sequence
   {
-    $offset = max(0, ($paged - 1) * max(1, $perPage));
+    // Page number and page size stay on the request for the list screen.
+    // The save reorders the submitted IDs wherever they sit in the sequence.
+    if ($paged < 1 || $perPage < 1) {
+      throw new InvalidArgumentException('Page coordinates must be positive.');
+    }
 
     $this->table->begin();
 
     try {
       $next = (new Sequence($this->table->orderedIds($postType)))
-        ->splicePage($pageIds, $offset);
+        ->reorderVisible($pageIds);
       $this->table->persist($next);
       $this->table->commit();
 

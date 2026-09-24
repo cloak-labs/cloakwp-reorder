@@ -29,12 +29,21 @@ final class SequenceTest extends TestCase
     $sequence->splicePage([9, 4], 3);
   }
 
-  public function testRejectsAnOffsetPastTheEnd(): void
+  public function testReordersVisibleIdsThatAreNotAContiguousPage(): void
+  {
+    $sequence = new Sequence([1, 2, 3, 4, 5]);
+
+    $next = $sequence->reorderVisible([5, 2, 4]);
+
+    $this->assertSame([1, 5, 3, 2, 4], $next->ids());
+  }
+
+  public function testRejectsAVisibleIdThatIsNotInTheSequence(): void
   {
     $sequence = new Sequence([1, 2, 3]);
 
     $this->expectException(StalePageException::class);
-    $sequence->splicePage([1, 2], 2);
+    $sequence->reorderVisible([1, 9]);
   }
 
   public function testRejectsDuplicateAndNonPositiveIds(): void
