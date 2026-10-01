@@ -82,10 +82,10 @@ Reorder::make()
   ->register();
 ```
 
-| Method | Effect |
-|--------|--------|
-| `postTypes(['project'])` | Allowlist. Only those slugs, and only if they are eligible. |
-| `allPostTypes()` | Every eligible post type (resolved when the screen/REST request runs). |
+| Method                   | Effect                                                                 |
+| ------------------------ | ---------------------------------------------------------------------- |
+| `postTypes(['project'])` | Allowlist. Only those slugs, and only if they are eligible.            |
+| `allPostTypes()`         | Every eligible post type (resolved when the screen/REST request runs). |
 
 ### Eligibility
 
